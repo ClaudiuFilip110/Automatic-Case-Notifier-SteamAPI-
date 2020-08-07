@@ -1,0 +1,7 @@
+'''
+TO DO
+- error handling when steam doesn't work
+- get the cases' name automatically
+- make an alert when the price goes up by X amount
+- web app + flask
+'''
