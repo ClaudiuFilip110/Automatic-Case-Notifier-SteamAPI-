@@ -16,8 +16,16 @@ data = ['Chroma 2 Case', 'Chroma 3 Case', 'Chroma Case', 'Clutch Case', 'CS:GO W
 
 users = ['uraniumiscute', 'seven_hack69', 'ClaudiuFilip110']
 req = 'https://steamcommunity.com/id/' + users[1] + '/inventory/json/730/2'
-r = requests.get(req)
+try:
+    r = requests.get(req)
+except:
+    print("Status code:", r.status_code)
+    print("bad request OR server unavailable")
+    quit()
 theJSON = r.json()
+
+# nothing important, it's meaningless
+nothing = True
 
 inventory = theJSON["rgInventory"]
 descriptions = theJSON["rgDescriptions"]
@@ -37,14 +45,16 @@ for key in descriptions:
             if item["classid"] == x["classid"]:
                 Cases[item["name"]] += 1
 
-MARKET = []
+PICKLE_MARKET = []
+STEAM_MARKET = []
 # -----------pickle module
-print('Do you want to refresh the market? (Y / N) ', end='')
+print('Do you want to compare the market prices with your stored prices? (Y / N) ', end='')
 market_refresh = str(input())
 market_refresh = market_refresh.upper()
+pickle_in = open("current_market.pickle", "rb")
+PICKLE_MARKET = pickle.load(pickle_in)
 if market_refresh != 'Y':
-    pickle_in = open("current_market.pickle", "rb")
-    MARKET = pickle.load(pickle_in)
+    nothing = True
 else:
     for i in range(len(data)):
         case = data[i]
@@ -56,12 +66,12 @@ else:
         r = requests.post(req)
         # convert the price from string to float
         #price = r.json()['lowest_price'].replace(',','.').replace('€','')
-        MARKET.append(r.json()['lowest_price'])
+        STEAM_MARKET.append(r.json()['lowest_price'])
         # print('loading...')
         print(before_replace, r.json()['lowest_price'],
               'Response from server:', str(r.status_code))
-        with open("current_market.pickle", "wb") as f:
-            pickle.dump(MARKET, f)
+        # with open("current_market.pickle", "wb") as f:
+        #     pickle.dump(STEAM_MARKET, f)
 
 # CASES
 cases = data
@@ -80,7 +90,7 @@ MARKET_CUT = []
 float_market = []
 float_market_rounded = [0 for i in range(len(QTY))]
 
-for i in MARKET:
+for i in PICKLE_MARKET:
     float_market.append(
         float(i.replace('€', '').replace(',', '.').replace('--', '00')))
 for i in range(len(float_market)):
@@ -95,13 +105,43 @@ for i in range(len(QTY)):
 TOTAL_CUT = [0 for i in range(len(cases))]
 for i in range(len(QTY)):
     TOTAL_CUT[i] = QTY[i] * float_market_rounded[i]
-df = {
+pickle_data = {
     'CASES': cases,
     'QTY': QTY,
-    'MARKET': MARKET,
+    'MARKET': float_market,
     'MARKET w~ CUT': float_market_rounded,
     'TOTAL': TOTAL,
     'TOTAL w~ CUT': TOTAL_CUT,
 }
-table = pd.DataFrame(data=df)
-print(table)
+pickle = pd.DataFrame(data=pickle_data)
+if market_refresh != 'Y':
+    print('These are the last stored prices')
+print(pickle)
+
+float_steam = []
+for price in STEAM_MARKET:
+    float_steam.append(
+        float(price.replace('€', '').replace(',', '.').replace('--', '00')))
+steam_data = {
+    'CASES': cases,
+    'STEAM': float_steam
+}
+steam = pd.DataFrame(data=steam_data)
+
+if(STEAM_MARKET):
+    print(steam)
+else:
+    print("steam prices not available")
+
+steam_market_series = [0 for i in range(len(cases))]
+for i in range(len(STEAM_MARKET)):
+    steam_market_series[i] = str(STEAM_MARKET[i]) + '€'
+
+compare_data = {
+    'CASES': cases,
+    'PICKLE': PICKLE_MARKET,
+    'MARKET': STEAM_MARKET,
+    'DIFF': pickle['MARKET'] - steam['STEAM']
+}
+compare = pd.DataFrame(data=compare_data)
+print(compare)

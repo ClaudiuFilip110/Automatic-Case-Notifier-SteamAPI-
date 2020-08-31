@@ -1,7 +1,15 @@
-'''
+
 TO DO
-- error handling when steam doesn't work
-- get the cases' name automatically
 - make an alert when the price goes up by X amount
-- web app + flask
-'''
+    - 'Do you want to compare the market prices with your stored prices?' 
+    if YES compare prices then ask update
+    # you can compare IF you get the current prices
+    - make a DataFrame with prices yesterday, today and the difference
+- error handling when steam doesn't work
+- total money DataFrame
+
+
+
+GIT
+changed the initial user input, 
+
