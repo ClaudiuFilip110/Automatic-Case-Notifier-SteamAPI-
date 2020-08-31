@@ -15,7 +15,7 @@ data = ['Chroma 2 Case','Chroma 3 Case', 'Chroma Case','Clutch Case','CS:GO Weap
         'Winter Offensive Weapon Case']
 
 users = ['uraniumiscute','seven_hack69', 'ClaudiuFilip110']
-req = 'https://steamcommunity.com/id/' + users[2] +'/inventory/json/730/2'
+req = 'https://steamcommunity.com/id/' + users[1] +'/inventory/json/730/2'
 r = requests.get(req)
 theJSON = r.json()
 
@@ -23,7 +23,7 @@ inventory = theJSON["rgInventory"]
 descriptions = theJSON["rgDescriptions"]
 #initialize the DICT with the available cases
 Cases = {}
-for key in descriptions:
+for key in descriptions: 
     item = descriptions[key]
     if " Case" in item["name"]:
         _case = item["name"]
@@ -47,13 +47,15 @@ if market_refresh != 'Y':
     MARKET = pickle.load(pickle_in)
 else:
     for i in range(len(data)):
-        case = str(data[i][0])
+        case = data[i]
         before_replace = case
         case = case.replace(' ','%20').replace(':','%3A')
         req = 'https://steamcommunity.com/market/priceoverview/?appid=730&currency=3&market_hash_name=' + case
         #wait 3 seconds because the server doesn't allow more than 20 queries/ min.
         time.sleep(3)
         r = requests.post(req)
+        #convert the price from string to float 
+        #price = r.json()['lowest_price'].replace(',','.').replace('€','')
         MARKET.append(r.json()['lowest_price'])
         #print('loading...')
         print(before_replace, r.json()['lowest_price'], 'CORRECT' if r.status_code == 200 else 'INCORRECT')
@@ -62,7 +64,7 @@ else:
 
 #CASES
 cases = data
-print(cases)
+
 #QTY of cases
 QTY = [0 for i in range(len(cases))]
 for key in descriptions:
@@ -101,6 +103,14 @@ df = {
 }
 table = pd.DataFrame(data=df)
 print(table)
+
+
+#print(table['MARKET'], table['MARKET w~ CUT'])
+# prices = []
+# for price in table['MARKET']:
+#     prices.append(float(price.replace(',','.').replace('€','')))
+#print(prices)
+#print(prices.compare(table['MARKET w~ CUT']))
 
 
 
